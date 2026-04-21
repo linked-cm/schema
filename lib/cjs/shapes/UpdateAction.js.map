@@ -1,0 +1,1 @@
+{"version":3,"file":"UpdateAction.js","sourceRoot":"","sources":["../../../src/shapes/UpdateAction.ts"],"names":[],"mappings":";;;;;;;;;AAAA,uDAAiD;AACjD,8CAA4C;AAC5C,2CAAqC;AAM9B,IAAM,YAAY,GAAlB,MAAM,YAAa,SAAQ,kBAAM;;AAA3B,oCAAY;AAChB,wBAAW,GAAG,kBAAM,CAAC,YAAY,AAAtB,CAAuB;uBAD9B,YAAY;IAJxB,IAAA,wBAAW,EAAC;QACX,WAAW,EACT,wKAAwK;KAC3K,CAAC;GACW,YAAY,CAExB"}

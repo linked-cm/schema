@@ -1,0 +1,1 @@
+{"version":3,"file":"AdministrativeArea.js","sourceRoot":"","sources":["../../../src/shapes/AdministrativeArea.ts"],"names":[],"mappings":";;;;;;;;;AAAA,8CAA4C;AAC5C,yCAAmC;AACnC,uDAAiD;AAM1C,IAAM,kBAAkB,GAAxB,MAAM,kBAAmB,SAAQ,gBAAK;;AAAhC,gDAAkB;AACtB,8BAAW,GAAG,kBAAM,CAAC,kBAAkB,AAA5B,CAA6B;6BADpC,kBAAkB;IAJ9B,IAAA,wBAAW,EAAC;QACX,WAAW,EACT,oJAAoJ;KACvJ,CAAC;GACW,kBAAkB,CAE9B"}

@@ -1,0 +1,96 @@
+:root {
+  --ld-profile-pics-border-radius: 12px;
+  --ld-profile-pics-background-color: #fff;
+}
+
+.Root {
+  display: block;
+  /*&.square {*/
+  /*  .uploadButton {*/
+  /*    width: 100%;*/
+  /*    height: 100%;*/
+  /*    min-width: 100px;*/
+  /*    min-height: 100px;*/
+  /*    aspect-ratio: 1;*/
+  /*    padding: 1rem;*/
+  /*    //> svg {*/
+  /*    //  width: 28px;*/
+  /*    //  height: 28px;*/
+  /*    //}*/
+  /*  }*/
+  /*  .imageUpload {*/
+  /*    width: 100%;*/
+  /*    aspect-ratio: 1;*/
+  /*  }*/
+  /*}*/
+}
+
+.uploaderContainer {
+  display: flex;
+  /* justify-content: flex-start;*/
+  /* align-items: center;*/
+  /* max-width: 100%;*/
+  cursor: pointer;
+  /* border: 2px solid red;*/
+  /* aspect-ratio: 3/2;*/
+}
+
+.uploadLabel {
+  cursor: pointer;
+  border: 1px solid rgb(174, 174, 174);
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.uploadButton {
+  justify-content: flex-end;
+  background: white;
+  border-radius: var(--ld-profile-pics-border-radius);
+  width: 100%;
+  height: auto;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  > svg {
+    width: 20%;
+    height: 20%;
+    color: #888888;
+  }
+}
+
+.imageUpload {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  justify-content: flex-end;
+  border-radius: var(--ld-profile-pics-border-radius);
+  background-color: var(--ld-profile-pics-background-color);
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.modalWrapper {
+  display: block;
+}
+
+.modalAction {
+  position: absolute;
+  bottom: calc(20px + var(--safe-area-bottom, 0px));
+  right: calc(20px + var(--safe-area-right, 0px));
+  text-align: right;
+  display: flex;
+  gap: 1rem;
+}

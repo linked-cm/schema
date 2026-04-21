@@ -1,0 +1,11 @@
+import { linkedShape } from '../package.js';
+import { Place } from './Place.js';
+import { schema } from '../ontologies/schema.js';
+
+@linkedShape({
+  description:
+    'A geographic or political area, e.g., country, region, city. Often linked to addresses, organizations, or events. (location, region, jurisdiction)',
+})
+export class AdministrativeArea extends Place {
+  static targetClass = schema.AdministrativeArea;
+}
