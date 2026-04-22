@@ -1,1 +1,0 @@
-{"version":3,"file":"SubscribeAction.js","sourceRoot":"","sources":["../../../src/shapes/SubscribeAction.ts"],"names":[],"mappings":";;;;;;;;;AAAA,uDAAiD;AACjD,8CAA4C;AAC5C,2CAAqC;AAM9B,IAAM,eAAe,GAArB,MAAM,eAAgB,SAAQ,kBAAM;;AAA9B,0CAAe;AACnB,2BAAW,GAAG,kBAAM,CAAC,eAAe,AAAzB,CAA0B;0BADjC,eAAe;IAJ3B,IAAA,wBAAW,EAAC;QACX,WAAW,EACT,wKAAwK;KAC3K,CAAC;GACW,eAAe,CAE3B"}
