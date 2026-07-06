@@ -4,12 +4,6 @@ import { linkedOntology } from '../package.js';
 import * as _this from './schema.js';
 
 export const loadData = async () => {
-  if (typeof module !== 'undefined' && typeof exports !== 'undefined') {
-    return Promise.all([
-      import('../data/schema-added.json'),
-      import('../data/schema.json'),
-    ]).then(([added, schema]) => [added, schema]);
-  }
   return Promise.all([
     //@ts-ignore
     import('../data/schema-added.json', { with: { type: 'json' } }).then(
