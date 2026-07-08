@@ -66,6 +66,9 @@ export class Thing extends Shape {
     // shape: [packageName, 'ImageObject'],
     shape: ['@_linked/schema', 'ImageObject'],
     maxCount: 1,
+    // An entity owns its image node — cascade-delete the ImageObject when the
+    // image is replaced/removed, so updates don't leave orphaned ImageObjects.
+    contains: true,
   })
   get image() {
     return null;
