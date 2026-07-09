@@ -1,5 +1,11 @@
 # @\_linked/schema
 
+## 1.0.8
+
+### Patch Changes
+
+- [#8](https://github.com/linked-cm/schema/pull/8) [`76c335f`](https://github.com/linked-cm/schema/commit/76c335fd7e8d2464c1816d70197fa96bb9c175f6) Thanks [@flyon](https://github.com/flyon)! - `Thing.image` is now an **owned** (`contains: true`) object property: an entity exclusively owns its `ImageObject`. Combined with core 2.14.1's owned-property cleanup, replacing/removing an entity's image (`update({image: {contentUrl}})`) now cascade-deletes the previous `ImageObject` instead of leaving it orphaned in the graph.
+
 ## 1.0.7
 
 ### Patch Changes
