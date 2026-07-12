@@ -1,5 +1,11 @@
 # @\_linked/schema
 
+## 1.1.0
+
+### Minor Changes
+
+- [#10](https://github.com/linked-cm/schema/pull/10) [`5625232`](https://github.com/linked-cm/schema/commit/5625232de4ac7e3691c0b9d37babf59624a7de45) Thanks [@flyon](https://github.com/flyon)! - Published ESM-only (dropped the CJS build) to match the rest of the `@_linked/*` fleet. No CJS `require` consumers remained.
+
 ## 1.0.8
 
 ### Patch Changes
