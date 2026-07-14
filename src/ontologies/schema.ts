@@ -157,6 +157,7 @@ export const addressRegion = term('addressRegion');
 export const addressLocality = term('addressLocality');
 export const streetAddress = term('streetAddress');
 export const creator = term('creator');
+export const author = term('author');
 export const headline = term('headline');
 export const childItem = term('childItem');
 
@@ -223,6 +224,7 @@ export const schema = {
   artist,
   artworkSurface,
   creator,
+  author,
   colorist,
   depth,
   height,
