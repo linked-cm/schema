@@ -1,5 +1,16 @@
 # @\_linked/schema
 
+## 1.1.1
+
+### Patch Changes
+
+- [#12](https://github.com/linked-cm/schema/pull/12) [`5eed2da`](https://github.com/linked-cm/schema/commit/5eed2daa30efe104d0922412f9bf1dd30309cf6c) Thanks [@flyon](https://github.com/flyon)! - Export the `schema:author` term. `author` was present in the underlying schema data but missing from the curated term exports; it can now be imported like the other terms:
+
+  ```ts
+  import { author, schema } from "@_linked/schema/ontologies/schema";
+  // author.id === 'http://schema.org/author'; also available as schema.author
+  ```
+
 ## 1.1.0
 
 ### Minor Changes
