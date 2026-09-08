@@ -9,3 +9,6 @@ yarn.lock
 # (.js alone is NOT ignored — some packages have legit .js test helpers/config.)
 src/**/*.d.ts
 src/**/*.js.map
+
+# stray CJS build artifacts must never live in src (break ESM SSR — plan-027 Gap B)
+src/**/*.js

@@ -69,7 +69,7 @@ export class ImageObjectProvider extends ShapeProvider {
               ? new Date(metaData.dateCreated)
               : null,
           url: metaData?.url,
-          identifier: metaData?.identifier.toString(),
+          identifier: metaData?.identifier?.toString(),
           name: metaData?.name,
         }) as unknown as Promise<ImageObject>;
       }
