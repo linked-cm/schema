@@ -6,7 +6,11 @@ import { Place } from './Place.js';
 import { Thing } from './Thing.js';
 import { PostalAddress } from './PostalAddress.js';
 import { xsd } from '@_linked/xsd/ontologies/xsd';
-import { DefinedTerm } from './DefinedTerm.js';
+import type { DefinedTerm } from './DefinedTerm.js';
+// Registers DefinedTerm, which `skills` names rather than references: DefinedTerm
+// extends CreativeWork, whose module registers Person, so a class reference here
+// would read `DefinedTerm` before it is initialised when DefinedTerm loads first.
+import './DefinedTerm.js';
 import { AdministrativeArea } from './AdministrativeArea.js';
 
 @linkedShape({
@@ -115,7 +119,7 @@ export class Person extends Thing {
 
   @objectProperty({
     path: schema.skills,
-    shape: DefinedTerm,
+    shape: ['@_linked/schema', 'DefinedTerm'],
   })
   get skills(): ShapeSet<DefinedTerm> {
     return new ShapeSet<DefinedTerm>();

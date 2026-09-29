@@ -14,7 +14,7 @@ export class ItemList<S extends Shape = Shape> extends Shape {
 
   @objectProperty({
     path: schema.itemListElement,
-    shape: ['@_linked/schema', 'ListItem'],
+    shape: ListItem,
   })
   get itemListElements(): ShapeSet<ListItem<S>> {
     return new ShapeSet<ListItem<S>>();
