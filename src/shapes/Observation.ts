@@ -22,7 +22,7 @@ export class Observation extends Thing {
   }
 
   @objectProperty({
-    shape: ['@_linked/schema', 'PropertyValue'],
+    shape: PropertyValue,
     path: schema.variableMeasured,
     maxCount: 1,
   })
