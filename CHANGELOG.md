@@ -1,5 +1,11 @@
 # @\_linked/schema
 
+## 1.2.1
+
+### Patch Changes
+
+- [#31](https://github.com/linked-fw/schema/pull/31) [`8200c1a`](https://github.com/linked-fw/schema/commit/8200c1af4d92a68a9f7713720d8825841646f9e5) Thanks [@flyon](https://github.com/flyon)! - Sourcemaps now embed their TypeScript source, so consumers no longer see 'points to missing source files' warnings.
+
 ## 1.2.0
 
 ### Minor Changes
