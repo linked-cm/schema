@@ -1,62 +1,11 @@
-import { literalProperty, objectProperty } from '@_linked/core/shapes/SHACL';
-import { linkedShape } from '../package.js';
-import { Thing } from './Thing.js';
-import { schema } from '../ontologies/schema.js';
-import { AdministrativeArea } from './AdministrativeArea.js';
-
-@linkedShape({
-  description:
-    'A mailing address; includes street, city, postal code, and country. Used for contact info of people, places, or organizations. (address, contact, location)',
-})
-export class PostalAddress extends Thing {
-  static targetClass = schema.Thing;
-
-  @literalProperty({
-    path: schema.postalCode,
-    maxCount: 1,
-  })
-  get postalCode(): string {
-    return '';
-  }
-
-  @objectProperty({
-    path: schema.areaServed,
-    shape: AdministrativeArea,
-    maxCount: 1,
-  })
-  get areaServed(): AdministrativeArea {
-    return null;
-  }
-
-  @literalProperty({
-    path: schema.addressCountry,
-    maxCount: 1,
-  })
-  get addressCountry(): string {
-    return '';
-  }
-
-  @literalProperty({
-    path: schema.addressRegion,
-    maxCount: 1,
-  })
-  get addressRegion(): string {
-    return '';
-  }
-
-  @literalProperty({
-    path: schema.addressLocality,
-    maxCount: 1,
-  })
-  get addressLocality(): string {
-    return '';
-  }
-
-  @literalProperty({
-    path: schema.streetAddress,
-    maxCount: 1,
-  })
-  get streetAddress(): string {
-    return '';
-  }
-}
+/**
+ * `PostalAddress`, with every shape reachable through its properties
+ * guaranteed to be registered (AdministrativeArea, and through Thing).
+ *
+ * The class lives in `PostalAddress.class.ts` because Person names it eagerly
+ * (`Person.address`): without the split, loading PostalAddress first left it
+ * uninitialised while Person evaluated. See `Thing.ts` for the rule.
+ */
+export * from './PostalAddress.class.js';
+import './Thing.js';
+import './AdministrativeArea.js';

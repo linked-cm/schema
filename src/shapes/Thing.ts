@@ -1,18 +1,26 @@
 /**
- * `Thing`, with the shapes its properties name guaranteed to be registered.
+ * `Thing`, with every shape reachable through its properties guaranteed to be
+ * registered.
  *
- * `Thing.image` names ImageObject by `[package, name]` because ImageObject
- * extends Thing, so the class module cannot import it. A shape registers only
- * when its module is evaluated, so loading Thing on its own used to leave
- * ImageObject unregistered, and a query traversing `.image` threw
- * "Shape class not found for …/ImageObject" in any bundle where nothing else
- * happened to import it.
+ * A shape registers only when its module is evaluated, and a query such as
+ * `x.image.creator.name` needs every shape along the path, not just the one
+ * the property names directly. So the rule in this package is:
  *
- * The class lives in `Thing.class.ts`. This module evaluates it first (the
- * re-export below is this module's first request, so `Thing` is initialised
- * before anything that extends it runs), then registers ImageObject. Modules
- * on ImageObject's own ancestor chain import the `.class` modules, never this
- * one, so the import cannot close a cycle back through `extends Thing`.
+ * - a `.class` module holds the class and imports only the `.class` modules of
+ *   its ancestors (for `extends`), so it can always be evaluated first;
+ * - the public module re-exports its class FIRST, then imports the PUBLIC
+ *   modules of its parent and of the shapes its properties name. Because each
+ *   of those public modules does the same, loading any public module registers
+ *   the whole closure (Thing → ImageObject → CreativeWork.creator → Person …).
+ *
+ * Importing a `.class` module for registration would stop that transitivity:
+ * that is how loading Thing (or Place, Answer, …) on its own left Person
+ * unregistered.
+ *
+ * A class that other shapes in the closure `extend` or name eagerly
+ * (`shape: Place`) must itself be split this way, or loading it first puts it
+ * on the import stack uninitialised while its own subclasses evaluate. That is
+ * why Place and Intangible have `.class` modules too.
  */
 export * from './Thing.class.js';
-import './ImageObject.class.js';
+import './ImageObject.js';

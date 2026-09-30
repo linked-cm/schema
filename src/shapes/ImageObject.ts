@@ -1,7 +1,7 @@
 /**
- * `ImageObject`, with the shapes its properties name guaranteed to be
- * registered: Person (`creator`, inherited from CreativeWork). See `Thing.ts`
- * for why the class lives in a `.class` module.
+ * `ImageObject`, with every shape reachable through its properties guaranteed
+ * to be registered (Person through `creator`, inherited from CreativeWork).
+ * See `Thing.ts` for the class/public split.
  */
 export * from './ImageObject.class.js';
-import './Person.js';
+import './MediaObject.js';
