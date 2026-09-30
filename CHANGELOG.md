@@ -1,5 +1,11 @@
 # @\_linked/schema
 
+## 1.2.3
+
+### Patch Changes
+
+- [#41](https://github.com/linked-fw/schema/pull/41) [`70d0f17`](https://github.com/linked-fw/schema/commit/70d0f17cb2b7e70c5b228352c5c10900be391ec2) Thanks [@flyon](https://github.com/flyon)! - Loading any public shape module now registers every shape reachable through its properties, transitively. Since 1.2.2, loading a Thing subclass outside the CreativeWork chain on its own (Place, Answer, Accommodation and 12 more) left Person unregistered, so a query such as `x.image.creator.name` threw "Shape class not found for …/schema/Person". Public import paths and exports are unchanged.
+
 ## 1.2.2
 
 ### Patch Changes
