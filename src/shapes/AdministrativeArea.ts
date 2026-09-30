@@ -1,11 +1,11 @@
-import { linkedShape } from '../package.js';
-import { Place } from './Place.js';
-import { schema } from '../ontologies/schema.js';
-
-@linkedShape({
-  description:
-    'A geographic or political area, e.g., country, region, city. Often linked to addresses, organizations, or events. (location, region, jurisdiction)',
-})
-export class AdministrativeArea extends Place {
-  static targetClass = schema.AdministrativeArea;
-}
+/**
+ * `AdministrativeArea`, with every shape reachable through its properties
+ * guaranteed to be registered (through Place and Thing).
+ *
+ * The class lives in `AdministrativeArea.class.ts` because Person's closure
+ * names it eagerly (`PostalAddress.areaServed`): without the split, loading
+ * AdministrativeArea first left it uninitialised while PostalAddress
+ * evaluated. See `Thing.ts` for the rule.
+ */
+export * from './AdministrativeArea.class.js';
+import './Place.js';

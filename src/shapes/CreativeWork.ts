@@ -1,9 +1,8 @@
 /**
- * `CreativeWork`, with the shapes its properties name guaranteed to be registered:
- * Person (`creator`, named by `[package, name]`) and ImageObject (`image`,
- * inherited from Thing). See `Thing.ts` for why the class lives in a `.class`
- * module and this one only re-exports it.
+ * `CreativeWork`, with every shape reachable through its properties guaranteed
+ * to be registered: Person (`creator`, named by `[package, name]`) and,
+ * through Thing, ImageObject. See `Thing.ts` for the class/public split.
  */
 export * from './CreativeWork.class.js';
-import './ImageObject.class.js';
+import './Thing.js';
 import './Person.js';
