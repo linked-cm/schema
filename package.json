@@ -28,8 +28,7 @@
     "@_linked/xsd": "^1.0",
     "formidable": "^3.5.4",
     "prism-react-renderer": "^2.4.1",
-    "typescript": "^5.7.3",
-    "usehooks-ts": "^2.9.1"
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@_linked/cli": "^1.2",
