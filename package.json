@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@_linked/cli": "^1.2",
-    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^3.0.0",
     "@types/formidable": "^3.4.5",
     "copyfiles": "^2.4.1",
