@@ -18,13 +18,14 @@
     "start": "npm exec linked dev",
     "build": "rimraf ./lib && npm run build-esm && npm run copy-to-lib",
     "build-esm": "echo \"compiling ESM\" && rimraf ./lib/esm && tsc -p tsconfig-esm.json",
-    "copy-to-lib": "echo 'copying CSS + JSON assets to lib folder' && copyfiles -u 1 'src/**/*.css' 'src/**/*.json' lib/esm"
+    "copy-to-lib": "echo 'copying CSS + JSON assets to lib folder' && copyfiles -u 1 'src/**/*.css' 'src/**/*.json' lib/esm",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@_linked/core": "^2.22.8",
     "@_linked/primitives": "^1.0",
     "@_linked/react": "^1.1.0",
-    "@_linked/server-utils": "^1.0",
+    "@_linked/server-utils": "^1.9.0",
     "@_linked/xsd": "^1.0",
     "formidable": "^3.5.4",
     "prism-react-renderer": "^2.4.1",
