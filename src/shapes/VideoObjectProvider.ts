@@ -8,7 +8,6 @@ import {
 } from '../utils/MediaUploadPolicy.js';
 
 export class VideoObjectProvider extends ShapeProvider {
-  private static ALLOWED_EXTENSIONS: string[] = ['mov', 'mp4'];
   shape: ShapeProvider['shape'] = VideoObject;
 
   // constructor(server) {
@@ -23,6 +22,10 @@ export class VideoObjectProvider extends ShapeProvider {
    * Custom method to upload a single file
    * See VideoObject.ts for the client-side implementation
    * This custom method receives NO arguments and will need to manually handle this.request.body for example
+   *
+   * The type is read from the file's bytes (MP4, WebM or QuickTime); the type
+   * the client sends is ignored. The stored name must end in an extension of
+   * that type.
    */
   @callable('user')
   async fromFormFile(): Promise<VideoObject> {
@@ -30,7 +33,7 @@ export class VideoObjectProvider extends ShapeProvider {
     return uploadMediaFromFormFile(
       this.request,
       (data) => VideoObject.create(data) as unknown as Promise<VideoObject>,
-      { caller, maxBytes: getMediaUploadPolicy().maxVideoBytes }
+      { caller, kind: 'video', maxBytes: getMediaUploadPolicy().maxVideoBytes }
     );
   }
 }

@@ -13,34 +13,13 @@ import {
   ownedKeyForDelete,
   requireMediaCaller,
 } from '../utils/MediaUploadPolicy.js';
+import {
+  imageTypeForDeclaredMime,
+  requireExtensionFor,
+  requireMediaType,
+} from '../utils/MediaTypes.js';
 
 export class ImageObjectProvider extends ShapeProvider {
-  private static ALLOWED_EXTENSIONS: string[] = [
-    'jpg',
-    'png',
-    'gif',
-    'webp',
-    'tiff',
-    'psd',
-    'raw',
-    'bmp',
-    'heif',
-    'indd',
-    'jpeg',
-  ];
-  /** Raster types `fromDataURL` accepts. SVG is left out: it can carry script. */
-  private static DATA_URL_MIME_TYPES: string[] = [
-    'image/png',
-    'image/jpeg',
-    'image/jpg',
-    'image/gif',
-    'image/webp',
-    'image/bmp',
-    'image/tiff',
-    'image/avif',
-    'image/heif',
-    'image/heic',
-  ];
   shape: ShapeProvider['shape'] = ImageObject;
 
   // constructor(server) {
@@ -81,7 +60,9 @@ export class ImageObjectProvider extends ShapeProvider {
   /**
    * Save a base64 `data:image/...` URL as an image. The file is stored under
    * the caller's prefix: `filePath` is relative to it, and the returned
-   * `contentUrl` is the URL to use.
+   * `contentUrl` is the URL to use. Accepts PNG, JPEG, GIF, WebP and AVIF: the
+   * decoded bytes must be of the declared type, and `filePath` must end in an
+   * extension of that type.
    */
   @callable('user')
   async fromDataURL(
@@ -98,23 +79,22 @@ export class ImageObjectProvider extends ShapeProvider {
     if (!match) {
       throw mediaCallError(400, 'Expected a base64 data:image/... URL.');
     }
-    const mimeType = match[1].toLowerCase();
-    if (!ImageObjectProvider.DATA_URL_MIME_TYPES.includes(mimeType)) {
-      throw mediaCallError(400, `Images of type ${mimeType} are not accepted.`);
+    const declared = imageTypeForDeclaredMime(match[1]);
+    if (!declared) {
+      throw mediaCallError(415, `Images of type ${match[1].toLowerCase()} are not accepted.`);
     }
     const data = dataUrl.slice(match[0].length);
     if (base64DecodedLength(data) > maxImageBytes) {
       throw mediaCallError(413, `The image is larger than ${maxImageBytes} bytes.`);
     }
-    const key = ownedKey(
-      caller,
-      filePath ?? `image.${mimeType.split('/')[1].split('+')[0]}`
-    );
+    const key = ownedKey(caller, filePath ?? `image.${declared.extensions[0]}`);
+    requireExtensionFor(key, declared);
     const buf = Buffer.from(data, 'base64');
     if (buf.length > maxImageBytes) {
       throw mediaCallError(413, `The image is larger than ${maxImageBytes} bytes.`);
     }
-    const publicPath = await LinkedFileStorage.saveFile(key, buf, mimeType, true);
+    const type = requireMediaType(buf, 'image', declared);
+    const publicPath = await LinkedFileStorage.saveFile(key, buf, type.mime, true);
     return ImageObject.create({
       contentUrl: publicPath,
       copyrightNotice: metaData?.copyrightNotice,
@@ -132,6 +112,10 @@ export class ImageObjectProvider extends ShapeProvider {
    * Custom method to upload a single file
    * See ImageObject.ts for the client-side implementation
    * This custom method receives NO arguments and will need to manually handle this.request.body for example
+   *
+   * The type is read from the file's bytes (PNG, JPEG, GIF, WebP or AVIF); the
+   * type the client sends is ignored. The stored name must end in an extension
+   * of that type.
    */
   @callable('user')
   async fromFormFile(): Promise<ImageObject> {
@@ -165,7 +149,7 @@ export class ImageObjectProvider extends ShapeProvider {
     return uploadMediaFromFormFile(
       this.request,
       (data) => ImageObject.create(data) as unknown as Promise<ImageObject>,
-      { caller, maxBytes: getMediaUploadPolicy().maxImageBytes }
+      { caller, kind: 'image', maxBytes: getMediaUploadPolicy().maxImageBytes }
     );
   }
 

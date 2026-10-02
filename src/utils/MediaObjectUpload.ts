@@ -6,6 +6,7 @@ import {
   mediaCallError,
   ownedKey,
 } from './MediaUploadPolicy.js';
+import { MediaKind, requireExtensionFor, requireMediaType } from './MediaTypes.js';
 
 type UploadMediaData = {
   contentUrl: string;
@@ -20,6 +21,8 @@ type UploadMediaData = {
 export interface UploadMediaOptions {
   /** The signed-in caller; the file is stored under their prefix. */
   caller: MediaCaller;
+  /** Which media the upload must be; its type is read from the bytes. */
+  kind: MediaKind;
   /** Largest accepted file, in bytes. */
   maxBytes: number;
 }
@@ -41,7 +44,7 @@ export function uploadMediaFromFormFile<T>(
   createMedia: (data: UploadMediaData) => Promise<T>,
   options: UploadMediaOptions
 ): Promise<T> {
-  const { caller, maxBytes } = options;
+  const { caller, kind, maxBytes } = options;
   const form = formidable({
     maxFiles: 1,
     maxFileSize: maxBytes,
@@ -81,22 +84,26 @@ export function uploadMediaFromFormFile<T>(
 
       let filePath: string;
       let buffer: Buffer;
+      let mime: string;
       try {
-        filePath = ownedKey(
-          caller,
-          first(fields['filePath'] as string | string[]) ?? nameFromUpload(file)
-        );
+        const requested =
+          first(fields['filePath'] as string | string[]) ?? nameFromUpload(file);
+        filePath = requested === undefined ? '' : ownedKey(caller, requested);
         buffer = fs.readFileSync(file.filepath);
+        if (buffer.length > maxBytes) {
+          throw mediaCallError(413, `The upload is larger than ${maxBytes} bytes.`);
+        }
+        // The client's Content-Type is not trusted: the type comes from the bytes.
+        const type = requireMediaType(buffer, kind);
+        filePath ||= ownedKey(caller, `upload.${type.extensions[0]}`);
+        requireExtensionFor(filePath, type);
+        mime = type.mime;
       } catch (error) {
         cleanup();
         reject(error);
         return;
       }
       cleanup();
-      if (buffer.length > maxBytes) {
-        reject(mediaCallError(413, `The upload is larger than ${maxBytes} bytes.`));
-        return;
-      }
 
       const metaData = {
         // Provide specific metadata values as needed
@@ -108,7 +115,7 @@ export function uploadMediaFromFormFile<T>(
         dateCreated: fields['dateCreated'],
       };
 
-      LinkedFileStorage.saveFile(filePath, buffer, file.mimetype)
+      LinkedFileStorage.saveFile(filePath, buffer, mime)
         .then(async (publicPath) => {
           const media = await createMedia({
             contentUrl: publicPath,
