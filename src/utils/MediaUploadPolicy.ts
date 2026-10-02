@@ -5,9 +5,9 @@
  *
  * Ownership model: every file a caller writes is stored under a prefix derived
  * from their own session (`users/<sha256 of the account id>` by default), and
- * listing and deleting only reach keys under that prefix. The client still
- * chooses the rest of the path, but it can no longer pick a key outside its
- * own folder, see other callers' files, or delete them.
+ * listing and deleting only reach keys under that prefix. The client chooses
+ * the path below the prefix; every key a call reads, writes or deletes is in
+ * the caller's own folder.
  *
  * Server-only: imports `crypto`.
  */

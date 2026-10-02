@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { PassThrough } from 'node:stream';
 import { LinkedFileStorage } from '@_linked/core/utils/LinkedFileStorage';
+import { runInHttpContext } from '@_linked/server-utils/utils/CallContext';
 import { ImageObjectProvider, VideoObjectProvider } from '../lib/esm/backend.js';
 import { ImageObject } from '../lib/esm/shapes/ImageObject.js';
 import { VideoObject } from '../lib/esm/shapes/VideoObject.js';
@@ -53,10 +54,18 @@ let store;
 const originalImageCreate = ImageObject.create;
 const originalVideoCreate = VideoObject.create;
 
+// A provider whose method calls each run in an HTTP call context for
+// `request`, as the server runs a dispatched call: `this.request` reads the
+// current call's context, and an assignment outside a call is ignored.
 function withRequest(Provider, request) {
   const provider = new Provider(undefined, undefined);
-  provider.request = request;
-  return provider;
+  return new Proxy(provider, {
+    get(target, key, receiver) {
+      const value = Reflect.get(target, key, receiver);
+      if (typeof value !== 'function') return value;
+      return (...args) => runInHttpContext(request, {}, () => value.apply(target, args));
+    },
+  });
 }
 const session = (accountId) => ({ linkedAuth: { userAccount: { id: accountId } } });
 const image = (request = session(ALICE)) => withRequest(ImageObjectProvider, request);
