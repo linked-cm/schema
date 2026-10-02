@@ -1,6 +1,11 @@
 import { LinkedFileStorage } from '@_linked/core/utils/LinkedFileStorage';
 import formidable, { File } from 'formidable';
 import fs from 'fs';
+import {
+  MediaCaller,
+  mediaCallError,
+  ownedKey,
+} from './MediaUploadPolicy.js';
 
 type UploadMediaData = {
   contentUrl: string;
@@ -12,34 +17,86 @@ type UploadMediaData = {
   dateCreated?: Date | undefined;
 };
 
+export interface UploadMediaOptions {
+  /** The signed-in caller; the file is stored under their prefix. */
+  caller: MediaCaller;
+  /** Largest accepted file, in bytes. */
+  maxBytes: number;
+}
+
+/** A form field may arrive once or repeated; take the first value. */
+function first<T>(value: T | T[] | undefined): T | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+/** A file name from the browser, reduced to one safe path segment. */
+function nameFromUpload(file: File): string | undefined {
+  const base = (file.originalFilename || '').split(/[\\/]/).pop() || '';
+  const clean = base.replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^\.+/, '');
+  return clean || undefined;
+}
+
 export function uploadMediaFromFormFile<T>(
   request,
-  createMedia: (data: UploadMediaData) => Promise<T>
+  createMedia: (data: UploadMediaData) => Promise<T>,
+  options: UploadMediaOptions
 ): Promise<T> {
-  const form = formidable({});
+  const { caller, maxBytes } = options;
+  const form = formidable({
+    maxFiles: 1,
+    maxFileSize: maxBytes,
+    maxTotalFileSize: maxBytes,
+    maxFields: 20,
+    maxFieldsSize: 64 * 1024,
+  });
 
   return new Promise<T>((resolve, reject) => {
     form.parse(request, async (err, fields, files) => {
+      const uploaded = Object.values(files || {})
+        .flat()
+        .filter(Boolean) as File[];
+      const cleanup = () => {
+        for (const upload of uploaded) {
+          fs.promises.rm(upload.filepath, { force: true }).catch(() => {});
+        }
+      };
       if (err) {
         console.warn('Error parsing uploaded file:' + err.stack);
-        reject(err);
+        cleanup();
+        const status = (err as any)?.httpCode;
+        reject(
+          status === 413
+            ? mediaCallError(413, `The upload is larger than ${maxBytes} bytes.`)
+            : mediaCallError(400, 'The upload could not be read.')
+        );
         return;
       }
 
-      // let file:File = files['upload'];
-
-      let file: File | File[] = files['upload'];
-      if (Array.isArray(file)) {
-        file = file[0];
-      }
-      // let filePath:string = fields['filePath'];
-      let filePath: string | string[] = fields['filePath'];
-      if (Array.isArray(filePath)) {
-        filePath = filePath[0];
+      const file = first(files['upload'] as File | File[]);
+      if (!file) {
+        cleanup();
+        reject(mediaCallError(400, 'No file was uploaded.'));
+        return;
       }
 
-      // create buffer from files
-      const buffer = fs.readFileSync(file.filepath);
+      let filePath: string;
+      let buffer: Buffer;
+      try {
+        filePath = ownedKey(
+          caller,
+          first(fields['filePath'] as string | string[]) ?? nameFromUpload(file)
+        );
+        buffer = fs.readFileSync(file.filepath);
+      } catch (error) {
+        cleanup();
+        reject(error);
+        return;
+      }
+      cleanup();
+      if (buffer.length > maxBytes) {
+        reject(mediaCallError(413, `The upload is larger than ${maxBytes} bytes.`));
+        return;
+      }
 
       const metaData = {
         // Provide specific metadata values as needed
@@ -55,9 +112,7 @@ export function uploadMediaFromFormFile<T>(
         .then(async (publicPath) => {
           const media = await createMedia({
             contentUrl: publicPath,
-            name: Array.isArray(filePath)
-              ? filePath[0].split('/').pop()
-              : filePath.split('/').pop(),
+            name: filePath.split('/').pop(),
             copyrightNotice: Array.isArray(metaData.copyrightNotice)
               ? metaData.copyrightNotice[0]
               : metaData.copyrightNotice,
