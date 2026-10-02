@@ -1,5 +1,30 @@
 # @\_linked/schema
 
+## 1.3.0
+
+### Minor Changes
+
+- [#51](https://github.com/linked-fw/schema/pull/51) [`cd39311`](https://github.com/linked-fw/schema/commit/cd393119be51f0592f42278e3ba34d1aa858ba32) Thanks [@flyon](https://github.com/flyon)! - Declare the client-called media methods with `@callable('user')` (`ImageObjectProvider.deleteFile`, `getAllFilestoreImages`, `fromDataURL`, `fromFormFile`; `VideoObjectProvider.fromFormFile`), so a server that enforces declared-callable methods keeps dispatching them and answers 401 without a session. Requires `@_linked/server-utils` `^1.9.0`.
+
+- [#51](https://github.com/linked-fw/schema/pull/51) [`cd39311`](https://github.com/linked-fw/schema/commit/cd393119be51f0592f42278e3ba34d1aa858ba32) Thanks [@flyon](https://github.com/flyon)! - The `ImageObjectProvider` and `VideoObjectProvider` file methods require a session, cap upload sizes, and keep each caller's files in a folder of their own.
+  
+  **Behaviour change — files are stored per user.** Each signed-in caller owns a store folder (`users/<sha256 of the account id>` by default, configurable with `ownerPrefix`). Uploads are written under it, `getAllFilestoreImages` lists only it, and `deleteFile` only deletes inside it. Files uploaded with an earlier version are not under any user's folder: they no longer appear in `getAllFilestoreImages` and **can no longer be deleted over RPC** (`deleteFile` answers 404). Remove or move them on the server if needed. The client's `filePath` is now relative to the caller's folder, so use the returned `contentUrl` rather than building a URL from `filePath`.
+  
+  - `fromDataURL`, `fromFormFile`, `deleteFile` and `getAllFilestoreImages` answer 401 without a session.
+  - `deleteFile` takes a key or a returned URL inside the caller's folder, and answers 404 for anything else.
+  - Paths with `..` or `.` segments, empty segments, backslashes, control characters, or a leading `/` or drive letter are rejected with 400.
+  - Uploads are capped at 10 MiB for images and 200 MiB for video, and answer 413 above that. Override with `LINKED_MAX_IMAGE_UPLOAD_BYTES` / `LINKED_MAX_VIDEO_UPLOAD_BYTES` or `configureMediaUploads()` from `@_linked/schema/utils/MediaUploadPolicy`, which also accepts an `ownerPrefix` function.
+  - `fromDataURL` uses a default file name when no `filePath` is given.
+  - `fromFormFile` accepts one file, uses the uploaded file name when no `filePath` is sent, and removes the temporary upload file afterwards.
+
+- [#51](https://github.com/linked-fw/schema/pull/51) [`cd39311`](https://github.com/linked-fw/schema/commit/cd393119be51f0592f42278e3ba34d1aa858ba32) Thanks [@flyon](https://github.com/flyon)! - The media upload methods accept a fixed set of file types, recognised from the file's content.
+  
+  - Images (`fromDataURL`, `ImageObjectProvider.fromFormFile`): PNG, JPEG, GIF, WebP and AVIF. Video (`VideoObjectProvider.fromFormFile`): MP4, WebM and QuickTime. Anything else, including SVG and HTML, answers 415.
+  - `fromDataURL` accepts `data:image/png`, `image/jpeg` (or `image/jpg`), `image/gif`, `image/webp` and `image/avif` URLs, and the decoded bytes must be of the declared type (415 otherwise). BMP, TIFF, HEIF and HEIC data URLs are no longer accepted.
+  - `fromFormFile` determines the type from the uploaded bytes and ignores the type the client sends. The file is stored with that type.
+  - The stored file name must end in an extension of the recognised type (`.png`; `.jpg` or `.jpeg`; `.gif`; `.webp`; `.avif`; `.mp4`; `.webm`; `.mov`, in any case), and answers 400 otherwise. Without a `filePath` or upload name the file is named after its type, for example `image.png` or `upload.mp4`.
+  - The type checks live in `@_linked/schema/utils/MediaTypes` (`detectImageType`, `detectVideoType`, `requireMediaType`, `requireExtensionFor`).
+
 ## 1.2.5
 
 ### Patch Changes
