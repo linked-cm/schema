@@ -1,6 +1,7 @@
 // import {File, default as formidable} from 'formidable';
 import { LinkedFileStorage } from '@_linked/core/utils/LinkedFileStorage';
 import { ShapeProvider } from '@_linked/server-utils/utils/ShapeProvider';
+import { callable } from '@_linked/server-utils/utils/callable';
 import { ImageCreationMetaData, ImageObject } from './ImageObject.js';
 import { uploadMediaFromFormFile } from '../utils/MediaObjectUpload.js';
 import { ShapeSet } from '@_linked/core/collections/ShapeSet';
@@ -55,12 +56,14 @@ export class ImageObjectProvider extends ShapeProvider {
    * Delete one of the caller's own uploads. `filePath` is the store key, or the
    * public URL a save returned. Keys outside the caller's prefix answer 404.
    */
+  @callable('user')
   async deleteFile(filePath: string): Promise<void> {
     const caller = requireMediaCaller(this.request);
     return LinkedFileStorage.deleteFile(ownedKeyForDelete(caller, filePath));
   }
 
   /** The caller's own uploads (keys under their prefix). */
+  @callable('user')
   async getAllFilestoreImages(): Promise<ShapeSet<ImageObject>> {
     const caller = requireMediaCaller(this.request);
     const prefix = `${caller.prefix}/`;
@@ -80,6 +83,7 @@ export class ImageObjectProvider extends ShapeProvider {
    * the caller's prefix: `filePath` is relative to it, and the returned
    * `contentUrl` is the URL to use.
    */
+  @callable('user')
   async fromDataURL(
     dataUrl: string,
     filePath?: string,
@@ -129,6 +133,7 @@ export class ImageObjectProvider extends ShapeProvider {
    * See ImageObject.ts for the client-side implementation
    * This custom method receives NO arguments and will need to manually handle this.request.body for example
    */
+  @callable('user')
   async fromFormFile(): Promise<ImageObject> {
     // const form = formidable({});
     //

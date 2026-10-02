@@ -1,4 +1,5 @@
 import { ShapeProvider } from '@_linked/server-utils/utils/ShapeProvider';
+import { callable } from '@_linked/server-utils/utils/callable';
 import { uploadMediaFromFormFile } from '../utils/MediaObjectUpload.js';
 import { VideoObject } from './VideoObject.js';
 import {
@@ -23,6 +24,7 @@ export class VideoObjectProvider extends ShapeProvider {
    * See VideoObject.ts for the client-side implementation
    * This custom method receives NO arguments and will need to manually handle this.request.body for example
    */
+  @callable('user')
   async fromFormFile(): Promise<VideoObject> {
     const caller = requireMediaCaller(this.request);
     return uploadMediaFromFormFile(
