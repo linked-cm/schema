@@ -177,9 +177,7 @@ describe('fromDataURL', () => {
     assert.equal(store.files.size, 0);
   });
 
-  it('rejects SVG and non-image data URLs', async () => {
-    const svg = 'data:image/svg+xml;base64,' + Buffer.from('<svg/>').toString('base64');
-    await rejectsWith(image().fromDataURL(svg, 'a.svg'), 415);
+  it('rejects non-image data URLs', async () => {
     await rejectsWith(image().fromDataURL('data:text/html;base64,PGI+', 'a.html'), 400);
     await rejectsWith(image().fromDataURL('not a data url', 'a.png'), 400);
   });
@@ -395,7 +393,7 @@ describe('media types are read from the bytes', () => {
     assert.equal(store.types.get(`${ALICE_PREFIX}/X.PNG`), 'image/png');
   });
 
-  for (const mime of ['image/svg+xml', 'image/bmp', 'image/tiff', 'image/x-icon']) {
+  for (const mime of ['image/bmp', 'image/tiff', 'image/x-icon']) {
     it(`fromDataURL refuses the declared type ${mime}`, async () => {
       await rejectsWith(image().fromDataURL(dataUrl(mime, PNG_BYTES), 'a.png'), 415);
     });
@@ -403,7 +401,6 @@ describe('media types are read from the bytes', () => {
 
   for (const [label, content] of [
     ['HTML', HTML],
-    ['SVG', SVG],
     ['unrecognised bytes', Buffer.from('just some text')],
   ]) {
     it(`fromFormFile refuses ${label} declared as image/png`, async () => {
@@ -443,5 +440,66 @@ describe('media types are read from the bytes', () => {
   it('ImageObject fromFormFile refuses video bytes', async () => {
     await rejectsWith(formUpload(ImageObjectProvider, 'v.mp4', MP4_BYTES, 'video/mp4'), 415);
     assert.equal(store.files.size, 0);
+  });
+  describe('SVG', () => {
+    const BOM = Buffer.from([0xef, 0xbb, 0xbf]);
+    const accepted = [
+      ['a bare root', SVG],
+      ['a self-closing root', Buffer.from('<svg/>')],
+      ['a BOM and an XML declaration', Buffer.concat([BOM, Buffer.from('<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg"/>')])],
+      ['comments and whitespace before the root', Buffer.from('<?xml version="1.0"?>\n<!-- Generator: x -->\n  <!-- <html> -->\n<svg width="1">\n</svg>')],
+      ['an svg doctype', Buffer.from('<?xml version="1.0"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg/>')],
+      ['a prefixed root', Buffer.from('<svg:svg xmlns:svg="http://www.w3.org/2000/svg"/>')],
+    ];
+    for (const [label, content] of accepted) {
+      it(`fromFormFile accepts ${label} named .svg, stored as image/svg+xml`, async () => {
+        await formUpload(ImageObjectProvider, 'a.svg', content, 'text/html');
+        assert.equal(store.types.get(`${ALICE_PREFIX}/a.svg`), 'image/svg+xml');
+      });
+    }
+
+    it('fromDataURL accepts an image/svg+xml data URL named .svg', async () => {
+      await image().fromDataURL(dataUrl('image/svg+xml', SVG), 'a.svg');
+      assert.equal(store.types.get(`${ALICE_PREFIX}/a.svg`), 'image/svg+xml');
+    });
+
+    it('names an SVG without filePath with .svg', async () => {
+      await image().fromDataURL(dataUrl('image/svg+xml', SVG));
+      assert.deepEqual([...store.files.keys()], [`${ALICE_PREFIX}/image.svg`]);
+    });
+
+    for (const name of ['a.png', 'a.html', 'a.svg.html', 'a.xml', 'a']) {
+      it(`refuses an SVG named ${JSON.stringify(name)}`, async () => {
+        await rejectsWith(formUpload(ImageObjectProvider, name, SVG, 'image/svg+xml'), 400);
+        await rejectsWith(image().fromDataURL(dataUrl('image/svg+xml', SVG), name), 400);
+        assert.equal(store.files.size, 0);
+      });
+    }
+
+    const refused = [
+      ['HTML', HTML],
+      ['an HTML root', Buffer.from('<html><body><svg/></body></html>')],
+      ['an HTML doctype before an svg root', Buffer.from('<!DOCTYPE html><svg/>')],
+      ['a doctype with an internal subset', Buffer.from('<!DOCTYPE svg [<!ENTITY x "y">]><svg/>')],
+      ['text before the root', Buffer.from('hello <svg/>')],
+      ['an element named like svg', Buffer.from('<svgfoo/>')],
+      ['an unterminated comment', Buffer.from('<!-- <svg/>')],
+      ['a script root', Buffer.from('<script>alert(1)</script>')],
+    ];
+    for (const [label, content] of refused) {
+      it(`refuses ${label} named .svg`, async () => {
+        await rejectsWith(formUpload(ImageObjectProvider, 'x.svg', content, 'image/svg+xml'), 415);
+        await rejectsWith(image().fromDataURL(dataUrl('image/svg+xml', content), 'x.svg'), 415);
+        assert.equal(store.files.size, 0);
+      });
+    }
+
+    it('refuses PNG bytes declared as image/svg+xml', async () => {
+      await rejectsWith(image().fromDataURL(dataUrl('image/svg+xml', PNG_BYTES), 'a.svg'), 415);
+    });
+
+    it('VideoObject refuses an SVG', async () => {
+      await rejectsWith(formUpload(VideoObjectProvider, 'v.mp4', SVG, 'video/mp4'), 415);
+    });
   });
 });

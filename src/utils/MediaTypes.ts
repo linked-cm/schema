@@ -3,7 +3,11 @@
  * bytes, and the file extensions allowed for each.
  *
  * A type is only accepted when its signature is recognised: anything else,
- * including HTML, SVG and other text formats, is refused. The client's
+ * including HTML and other text formats, is refused. SVG is recognised by its
+ * root element (see `isSvg`); it can carry script, which is harmless only
+ * because `/uploads` is served with `X-Content-Type-Options: nosniff` and
+ * `Content-Security-Policy: sandbox`, and the `.svg` extension keeps it from
+ * being served as HTML. The client's
  * declared type is never trusted on its own, and the stored file name must
  * carry an extension that belongs to the recognised type, so the file is
  * served as what it actually is.
@@ -27,6 +31,7 @@ export const IMAGE_TYPES: Record<string, MediaType> = {
   gif: { mime: 'image/gif', extensions: ['gif'] },
   webp: { mime: 'image/webp', extensions: ['webp'] },
   avif: { mime: 'image/avif', extensions: ['avif'] },
+  svg: { mime: 'image/svg+xml', extensions: ['svg'] },
 };
 
 export const VIDEO_TYPES: Record<string, MediaType> = {
@@ -43,6 +48,7 @@ const DECLARED_IMAGE_MIME: Record<string, MediaType> = {
   'image/gif': IMAGE_TYPES.gif,
   'image/webp': IMAGE_TYPES.webp,
   'image/avif': IMAGE_TYPES.avif,
+  'image/svg+xml': IMAGE_TYPES.svg,
 };
 
 /** The accepted image type a declared MIME type names, if any. */
@@ -71,6 +77,54 @@ const IMAGE_BRANDS = [...AVIF_BRANDS, 'heic', 'heix', 'heim', 'heis', 'mif1', 'm
 /** Top-level atoms a QuickTime file without an `ftyp` box starts with. */
 const QUICKTIME_ATOMS = ['moov', 'mdat', 'wide', 'free', 'skip', 'pnot'];
 
+/** How much of a file `isSvg` reads to find the root element. */
+const SVG_SCAN_BYTES = 64 * 1024;
+
+/**
+ * Whether the bytes are an SVG document: after an optional UTF-8 byte order
+ * mark, an optional XML declaration, and any comments, processing
+ * instructions, whitespace and an `svg` doctype without an internal subset,
+ * the root element is `<svg>` (or a prefixed `<x:svg>`). Anything else before
+ * the root element, an HTML doctype or root included, means it is not.
+ */
+export function isSvg(buffer: Buffer): boolean {
+  let text = buffer.toString('utf8', 0, Math.min(buffer.length, SVG_SCAN_BYTES));
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  let i = 0;
+  const skipSpace = () => {
+    while (i < text.length && /[\x20\t\r\n]/.test(text[i])) i++;
+  };
+  if (text.startsWith('<?xml', i) && /[\x20\t\r\n?]/.test(text[i + 5] ?? '')) {
+    const end = text.indexOf('?>', i);
+    if (end < 0) return false;
+    i = end + 2;
+  }
+  for (;;) {
+    skipSpace();
+    if (text.startsWith('<!--', i)) {
+      const end = text.indexOf('-->', i + 4);
+      if (end < 0) return false;
+      i = end + 3;
+    } else if (text.startsWith('<?', i)) {
+      const end = text.indexOf('?>', i + 2);
+      if (end < 0) return false;
+      i = end + 2;
+    } else if (/^<!DOCTYPE[\x20\t\r\n]/i.test(text.slice(i, i + 10))) {
+      const end = text.indexOf('>', i);
+      if (end < 0) return false;
+      const doctype = text.slice(i, end);
+      // only `<!DOCTYPE svg ...>`, and no internal subset (entity definitions)
+      if (!/^<!DOCTYPE[\x20\t\r\n]+svg(?:[\x20\t\r\n]|$)/i.test(doctype) || doctype.includes('[')) {
+        return false;
+      }
+      i = end + 1;
+    } else {
+      break;
+    }
+  }
+  return /^<(?:[A-Za-z_][\w.-]*:)?svg(?:[\x20\t\r\n>]|\/>)/.test(text.slice(i, i + 64));
+}
+
 /** Recognise an accepted image type from its leading bytes. */
 export function detectImageType(buffer: Buffer): MediaType | undefined {
   if (
@@ -91,6 +145,7 @@ export function detectImageType(buffer: Buffer): MediaType | undefined {
   if (brands && brands.some((brand) => AVIF_BRANDS.includes(brand))) {
     return IMAGE_TYPES.avif;
   }
+  if (isSvg(buffer)) return IMAGE_TYPES.svg;
   return undefined;
 }
 
