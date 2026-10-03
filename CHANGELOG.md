@@ -1,5 +1,11 @@
 # @\_linked/schema
 
+## 1.4.0
+
+### Minor Changes
+
+- [#53](https://github.com/linked-fw/schema/pull/53) [`49a375e`](https://github.com/linked-fw/schema/commit/49a375ee0ecb7f9953535a78dbff1fa0001cfcbe) Thanks [@flyon](https://github.com/flyon)! - Image uploads accept SVG again. `ImageObject.fromFormFile` and `fromDataURL` (declared `image/svg+xml`) accept a file whose content is an SVG document, recognised from its bytes: after an optional UTF-8 byte order mark, an optional XML declaration, and any comments, processing instructions or an `svg` doctype (without an internal subset), the root element must be `<svg>`. It must be named with `.svg` and is stored as `image/svg+xml`. HTML is still refused, as is an SVG under any other extension. This relies on `/uploads` being served with `X-Content-Type-Options: nosniff` and `Content-Security-Policy: sandbox` (as `@_linked/server` does), which keeps script inside an SVG from running.
+
 ## 1.3.0
 
 ### Minor Changes
