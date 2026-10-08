@@ -1,5 +1,11 @@
 # @\_linked/schema
 
+## 1.4.1
+
+### Patch Changes
+
+- [#57](https://github.com/linked-fw/schema/pull/57) [`c5ca3c3`](https://github.com/linked-fw/schema/commit/c5ca3c3e28cc0c1287d26434bc5d70b686834a56) Thanks [@flyon](https://github.com/flyon)! - Publish only the files consumers need; the tarball no longer includes `.changeset/`, `.gitattributes`, `.github/`, `docs/`, `renovate.json` or tsconfig files.
+
 ## 1.4.0
 
 ### Minor Changes
