@@ -1,5 +1,13 @@
 # @\_linked/schema
 
+## 1.4.2
+
+### Patch Changes
+
+- [#60](https://github.com/linked-fw/schema/pull/60) [`dc087fe`](https://github.com/linked-fw/schema/commit/dc087fe21c6b5e549878a780da4b8b6156624134) Thanks [@flyon](https://github.com/flyon)! - typescript is no longer installed into consumers: it was listed as a runtime dependency, but the package only needs the compiler to build, so it moved to devDependencies.
+  
+  Declares its React peer; accepts React 18 or 19. The components import `react`, which is now a `peerDependencies` entry (`^18.2.0 || ^19.0.0`) so the consumer's single React copy is used.
+
 ## 1.4.1
 
 ### Patch Changes
