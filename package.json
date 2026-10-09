@@ -32,8 +32,10 @@
     "@_linked/server-utils": "^1.9.0",
     "@_linked/xsd": "^1.0",
     "formidable": "^3.5.4",
-    "prism-react-renderer": "^2.4.1",
-    "typescript": "^5.7.3"
+    "prism-react-renderer": "^2.4.1"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0 || ^19.0.0"
   },
   "devDependencies": {
     "@_linked/cli": "^1.2",
@@ -48,6 +50,7 @@
     "react-dom": "^19.3.0",
     "rimraf": "^6.0.0",
     "tsconfig-to-dual-package": "^1.2.0",
+    "typescript": "^5.7.3",
     "typescript-plugin-css-modules": "^5.1.0"
   },
   "exports": {
